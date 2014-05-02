@@ -314,8 +314,7 @@ using terms from application "Messages"
 			set blockedPersonChatting to false
 			set blockedPeople to (read blockedPeopleTxt)
 			repeat with blockedPerson in paragraphs of blockedPeople
-				display alert blockedPerson
-				if (blockedPerson as string is theBuddy) then
+				if (blockedPerson as string is full name of theBuddy) then
 					set blockedPersonChatting to true
 				end if
 			end repeat
