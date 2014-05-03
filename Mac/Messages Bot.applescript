@@ -355,7 +355,7 @@ using terms from application "Messages"
 				end if
 			end if
 		else
-			send "You is a bad wizard!  I only serve Master and his friends!"
+			send "You is a bad wizard!  I only serve Master and his friends!" to theChat
 		end if
 	end sendMessage
 end using terms from
