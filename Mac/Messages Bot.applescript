@@ -376,7 +376,7 @@ using terms from application "Messages"
 								send ticTacToeStatus to theChat
 								send "Waiting for " & playerTwo & "'s move..." to theChat
 							else
-								if ((full name of theBuddy) is playerTwo) then
+								if (((full name of theBuddy) is playerTwo) and (firstPlayerTurn is "false")) then
 									set ticTacToeStatus to str_replace("[" & (changeCase of theMessage to "upper") & "]", " O ", ticTacToeStatus)
 									set firstPlayerTurn to "true"
 									send ticTacToeStatus to theChat
