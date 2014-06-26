@@ -1,3 +1,10 @@
+property ticTacToeOptions : {"q", "w", "e", "a", "s", "d", "z", "x", "c"}
+property firstPlayerTurn : true
+property ticTacToeStatus : ""
+property playerOne : ""
+property playerTwo : ""
+property isPlaying : false
+
 using terms from application "Messages"
 	on addressed message received
 		(* Do nothing *)
@@ -144,9 +151,10 @@ using terms from application "Messages"
 	end write_to_file
 	
 	on unblockPerson(personToUnblock)
-		set blockedPeopleTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
+		set blockedPeopleTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
 		set blockedPeople to (read blockedPeopleTxt)
-		write_to_file(deleteLinesFromText(blockedPeople & "\n", personToUnblock), blockedPeopleTxt, false)
+		write_to_file(deleteLinesFromText(blockedPeople & "
+", personToUnblock), blockedPeopleTxt, false)
 	end unblockPerson
 	
 	on deleteLinesFromText(theText, deletePhrase)
@@ -171,6 +179,7 @@ using terms from application "Messages"
 	end deleteLinesFromText
 	
 	on message sent theMessage for theChat
+		set theBuddy to buddy "[[youremail]]" of service "E:[[youremail]]"
 		if ((changeCase of theMessage to "lower") is "/list blocked" or (changeCase of theMessage to "lower") is "/listblocked") then
 			send listBlockedPeople() to theChat
 		else
@@ -179,6 +188,7 @@ using terms from application "Messages"
 				blockPerson(blockedPerson)
 				send blockedPerson & " was successfully blocked, master; may you be to never unblock this bad wizard!" to theChat
 			else
+				
 				if (theMessage starts with "/unblock ") then
 					set blockedPerson to str_replace("/unblock ", "", theMessage)
 					unblockPerson(blockedPerson)
@@ -213,7 +223,11 @@ using terms from application "Messages"
 								end repeat
 								send ("Master, the answer is " & ((do shell script "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Resources/jsc -e \"print(" & theMessage & ")\"") as string)) to theChat
 							on error
-								send ("Master said '" & theMessage & "'") to theChat
+								if (theMessage starts with "/quote ") then
+									send ("Master said '" & str_replace("/quote ", "", theMessage) & "'") to theChat
+								else
+									sendMessage(theMessage, theBuddy, theChat)
+								end if
 							end try
 						end if
 					end if
@@ -276,7 +290,7 @@ using terms from application "Messages"
 	on listBlockedPeople()
 		try
 			set listOfBlockedPeople to ""
-			set blockedPeople to paragraphs of (read file "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt")
+			set blockedPeople to paragraphs of (read file "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt")
 			set amountOfBlockedPeople to length of blockedPeople
 			repeat with nextLine in blockedPeople
 				if amountOfBlockedPeople is greater than 1 then
@@ -304,13 +318,14 @@ using terms from application "Messages"
 	end joinList
 	
 	on blockPerson(thePerson)
-		set blockedPeopleTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
-		write thePerson & "\n" starting at (1 + (get eof blockedPeopleTxt)) to blockedPeopleTxt
+		set blockedPeopleTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
+		write thePerson & "
+" starting at (1 + (get eof blockedPeopleTxt)) to blockedPeopleTxt
 	end blockPerson
 	
 	on sendMessage(theMessage, theBuddy, theChat)
 		try
-			set blockedPeopleTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
+			set blockedPeopleTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
 			set blockedPersonChatting to false
 			set blockedPeople to (read blockedPeopleTxt)
 			repeat with blockedPerson in paragraphs of blockedPeople
@@ -321,37 +336,96 @@ using terms from application "Messages"
 		on error
 			(* Do nothing *)
 		end try
+		set isPlayingTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Is Playing.txt"
+		set isPlaying to read isPlayingTxt
 		if (blockedPersonChatting is false) then
 			if ((changeCase of theMessage to "lower") is "/list blocked" or (changeCase of theMessage to "lower") is "/listblocked") then
 				send listBlockedPeople() to theChat
 			else
-				if (theMessage starts with "/choose ") then
-					try
-						set optionsText to theMessage
-						set optionsText to str_replace("/choose ", "", optionsText)
-						set options to split(optionsText, ",")
-						if ((count of options) is 1) then
-							send "Feed me more items!" to theChat
-						else
-							set chosenOption to some item of options
-							send (full name of theBuddy & ": " & chosenOption & ", I choose you!") to theChat
-						end if
-					on error
-						(* Should go on to "Person said text" *)
-					end try
+				if ((theMessage is "/endmatch") and (isPlaying is "true")) then
+					my write_to_file("false", isPlayingTxt, false)
+					send "Match ended" to theChat
 				else
-					set blacky to {"for", "while"}
-					try
-						repeat with theItem in blacky
-							if (theMessage contains theItem or theMessage starts with "\"" or theMessage is "true" or theMessage is "false" or theMessage is "yes" or theMessage is "no") then
-								send "(Nice try, " & theBuddy & ")" to theChat
-								error "You don't have access to these commands."
+					if (theMessage starts with "/choose ") then
+						try
+							set optionsText to theMessage
+							set optionsText to str_replace("/choose ", "", optionsText)
+							set options to split(optionsText, ",")
+							if ((count of options) is 1) then
+								send "Feed me more items!" to theChat
+							else
+								set chosenOption to some item of options
+								send (full name of theBuddy & ": " & chosenOption & ", I choose you!") to theChat
 							end if
-						end repeat
-						send (full name of theBuddy & ", the answer is " & ((do shell script "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Resources/jsc -e \"print(" & theMessage & ")\"") as string)) to theChat
-					on error
-						send (full name of theBuddy & " said '" & theMessage & "'") to theChat
-					end try
+						on error
+							(* Should go on to "Person said text" *)
+						end try
+					else
+						if ((changeCase of theMessage to "lower") is in ticTacToeOptions) then
+							set playerOneTxt to read (alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P1Name.txt")
+							set playerTwoTxt to read (alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P2Name.txt")
+							set playerOne to playerOneTxt
+							set playerTwo to playerTwoTxt
+							set ticTacToeStatusTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:TicTacToe.txt"
+							set ticTacToeStatus to (read ticTacToeStatusTxt)
+							set firstPlayerTurnTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:FirstPlayerTurn.txt"
+							set firstPlayerTurn to read firstPlayerTurnTxt
+							if ((firstPlayerTurn is "true") and ((full name of theBuddy) is playerOne)) then
+								set ticTacToeStatus to str_replace("[" & (changeCase of theMessage to "upper") & "]", " X ", ticTacToeStatus)
+								set firstPlayerTurn to "false"
+								send ticTacToeStatus to theChat
+								send "Waiting for " & playerTwo & "'s move..." to theChat
+							else
+								if ((full name of theBuddy) is playerTwo) then
+									set ticTacToeStatus to str_replace("[" & (changeCase of theMessage to "upper") & "]", " O ", ticTacToeStatus)
+									set firstPlayerTurn to "true"
+									send ticTacToeStatus to theChat
+									send "Waiting for " & playerOne & "'s move..." to theChat
+								end if
+							end if
+							my write_to_file(firstPlayerTurn, firstPlayerTurnTxt, false)
+							my write_to_file(ticTacToeStatus, ticTacToeStatusTxt, false)
+						else
+							if ((theMessage starts with "/start tictactoe with ") and (isPlaying contains "false")) then
+								set isPlaying to "true"
+								my write_to_file(isPlaying, isPlayingTxt, false)
+								set playerOne to (full name of theBuddy)
+								set playerOneTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P1Name.txt"
+								my write_to_file(playerOne, playerOneTxt, false)
+								set playerTwo to str_replace("/start tictactoe with ", "", theMessage)
+								set playerTwoTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P2Name.txt"
+								my write_to_file(playerTwo, playerTwoTxt, false)
+								set ticTacToeStatusTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:TicTacToe.txt"
+								set ticTacToeStatus to "___________
+[Q] | [W] | [E]
+___________
+[A] | [S] | [D]
+___________
+[Z] | [X] | [C]
+___________"
+								my write_to_file(ticTacToeStatus, ticTacToeStatusTxt, false)
+								send ("Starting TicTacToe with " & playerTwo & "...") to theChat
+								send ticTacToeStatus to theChat
+								send "Waiting for " & playerOne & "'s move..." to theChat
+								my write_to_file("true", firstPlayerTurnTxt, false)
+							else
+								set blacky to {"for", "while"}
+								try
+									repeat with theItem in blacky
+										if (theMessage contains theItem or theMessage starts with "\"" or theMessage is "true" or theMessage is "false" or theMessage is "yes" or theMessage is "no") then
+											send "(Nice try, " & theBuddy & ")" to theChat
+											error "You don't have access to these commands."
+										end if
+									end repeat
+									send (full name of theBuddy & ", the answer is " & ((do shell script "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Resources/jsc -e \"print(" & theMessage & ")\"") as string)) to theChat
+								on error
+									if (theMessage starts with "/quote ") then
+										send (full name of theBuddy & " said '" & str_replace("/quote ", "", theMessage) & "'") to theChat
+									end if
+								end try
+							end if
+						end if
+					end if
 				end if
 			end if
 		else
