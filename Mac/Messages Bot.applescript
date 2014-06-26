@@ -151,7 +151,7 @@ using terms from application "Messages"
 	end write_to_file
 	
 	on unblockPerson(personToUnblock)
-		set blockedPeopleTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
+		set blockedPeopleTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
 		set blockedPeople to (read blockedPeopleTxt)
 		write_to_file(deleteLinesFromText(blockedPeople & "
 ", personToUnblock), blockedPeopleTxt, false)
@@ -290,7 +290,7 @@ using terms from application "Messages"
 	on listBlockedPeople()
 		try
 			set listOfBlockedPeople to ""
-			set blockedPeople to paragraphs of (read file "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt")
+			set blockedPeople to paragraphs of (read file "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt")
 			set amountOfBlockedPeople to length of blockedPeople
 			repeat with nextLine in blockedPeople
 				if amountOfBlockedPeople is greater than 1 then
@@ -318,14 +318,15 @@ using terms from application "Messages"
 	end joinList
 	
 	on blockPerson(thePerson)
-		set blockedPeopleTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
+		set blockedPeopleTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
 		write thePerson & "
 " starting at (1 + (get eof blockedPeopleTxt)) to blockedPeopleTxt
 	end blockPerson
 	
 	on sendMessage(theMessage, theBuddy, theChat)
 		try
-			set blockedPeopleTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
+			set firstPlayerTurnTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:FirstPlayerTurn.txt"
+			set blockedPeopleTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Blocked People.txt"
 			set blockedPersonChatting to false
 			set blockedPeople to (read blockedPeopleTxt)
 			repeat with blockedPerson in paragraphs of blockedPeople
@@ -336,7 +337,7 @@ using terms from application "Messages"
 		on error
 			(* Do nothing *)
 		end try
-		set isPlayingTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:Is Playing.txt"
+		set isPlayingTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:Is Playing.txt"
 		set isPlaying to read isPlayingTxt
 		if (blockedPersonChatting is false) then
 			if ((changeCase of theMessage to "lower") is "/list blocked" or (changeCase of theMessage to "lower") is "/listblocked") then
@@ -362,13 +363,12 @@ using terms from application "Messages"
 						end try
 					else
 						if ((changeCase of theMessage to "lower") is in ticTacToeOptions) then
-							set playerOneTxt to read (alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P1Name.txt")
-							set playerTwoTxt to read (alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P2Name.txt")
+							set playerOneTxt to read (alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:P1Name.txt")
+							set playerTwoTxt to read (alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:P2Name.txt")
 							set playerOne to playerOneTxt
 							set playerTwo to playerTwoTxt
-							set ticTacToeStatusTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:TicTacToe.txt"
+							set ticTacToeStatusTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:TicTacToe.txt"
 							set ticTacToeStatus to (read ticTacToeStatusTxt)
-							set firstPlayerTurnTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:FirstPlayerTurn.txt"
 							set firstPlayerTurn to read firstPlayerTurnTxt
 							if ((firstPlayerTurn is "true") and ((full name of theBuddy) is playerOne)) then
 								set ticTacToeStatus to str_replace("[" & (changeCase of theMessage to "upper") & "]", " X ", ticTacToeStatus)
@@ -390,12 +390,12 @@ using terms from application "Messages"
 								set isPlaying to "true"
 								my write_to_file(isPlaying, isPlayingTxt, false)
 								set playerOne to (full name of theBuddy)
-								set playerOneTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P1Name.txt"
+								set playerOneTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:P1Name.txt"
 								my write_to_file(playerOne, playerOneTxt, false)
 								set playerTwo to str_replace("/start tictactoe with ", "", theMessage)
-								set playerTwoTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:P2Name.txt"
+								set playerTwoTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:P2Name.txt"
 								my write_to_file(playerTwo, playerTwoTxt, false)
-								set ticTacToeStatusTxt to alias "Macintosh HD:Users:abrahamhamidi:Library:Application Scripts:com.apple.iChat:Messages Bot:TicTacToe.txt"
+								set ticTacToeStatusTxt to alias "Macintosh HD:Users:YourUserName:Library:Application Scripts:com.apple.iChat:Messages Bot:TicTacToe.txt"
 								set ticTacToeStatus to "___________
 [Q] | [W] | [E]
 ___________
